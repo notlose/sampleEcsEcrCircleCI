@@ -1,0 +1,7 @@
+version: '2'
+services:
+  web:
+    image: 474897046194.dkr.ecr.ap-southeast-1.amazonaws.com/webapp:latest
+    ports:
+      - "80:80"
+    entrypoint: /docker-entrypoint.sh
