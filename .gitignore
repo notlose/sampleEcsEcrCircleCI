@@ -1,11 +1,12 @@
 /node_modules
-/public/hot
-/public/storage
-/storage/*.key
+/web/source/public/hot
+/web/source/public/storage
+/web/source/storage/*.key
 /vendor
-/.idea
-/.vagrant
+/web/source/.idea
+/web/source/.vagrant
 Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+/web/source/vendor/
