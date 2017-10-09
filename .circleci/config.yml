@@ -44,7 +44,7 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               ecs-cli configure --region ap-southeast-1 --access-key $AWS_ACCESS_KEY_ID --secret-key $AWS_SECRET_ACCESS_KEY --cluster demoapp
               TAG=$CIRCLE_BUILD_NUM
-              docker build -t 474897046194.dkr.ecr.ap-southeast-1.amazonaws.com/webapp:latest ./web/source/
+              docker build -t 474897046194.dkr.ecr.ap-southeast-1.amazonaws.com/webapp:latest ./web/
               eval $(aws ecr get-login --region ap-southeast-1)
               docker push 474897046194.dkr.ecr.ap-southeast-1.amazonaws.com/webapp:latest
               ecs-cli compose -f docker/docker-compose-staging.yml service up --deployment-min-healthy-percent 0 --timeout 5
