@@ -15,9 +15,7 @@ RUN apt-get update && \
       php7.0-curl \
       php7.0-xml \
       php-imagick \
-      curl \ 
-      redis-tools \ 
-      php-redis
+      curl
 
 RUN /usr/sbin/a2enmod rewrite
 
