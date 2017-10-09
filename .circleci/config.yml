@@ -1,0 +1,62 @@
+version: 2
+jobs:
+  build:
+    docker:
+    - image: circleci/php:7.1.8-apache
+    branches:
+      only:
+        - master  
+    working_directory: ~/laravel
+    steps:
+      - checkout
+      - setup_remote_docker   # (2)
+
+      # use a primary image that already has Docker (recommended)
+      # or install it during a build like we do here
+      - run:
+          name: Install Docker client
+          command: |
+            set -x
+            VER="17.03.0-ce"
+            curl -L -o /tmp/docker-$VER.tgz https://get.docker.com/builds/Linux/x86_64/docker-$VER.tgz
+            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
+            sudo mv /tmp/docker/* /usr/bin
+      - run: sudo apt-get update && sudo apt-get install -y python3-pip && sudo pip3 install awscli
+      - run: sudo apt install -y libsqlite3-dev
+      - run: sudo composer self-update
+      - restore_cache:
+          keys:
+            - composer-v1-{{ checksum "web/source/composer.json" }}
+            - composer-v1-
+      - run: cd web/source/ && composer install -n --prefer-dist
+      - save_cache:
+          key: composer-v1-{{ checksum "web/source/composer.json" }}
+          paths:
+            - vendor
+      - run:
+          name: install ecs cli
+          command: |
+            sudo curl -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest
+            sudo chmod +x /usr/local/bin/ecs-cli
+            
+      - deploy:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              ecs-cli configure --region ap-southeast-1 --access-key $AWS_ACCESS_KEY_ID --secret-key $AWS_SECRET_ACCESS_KEY --cluster demoapp
+              TAG=$CIRCLE_BUILD_NUM
+              docker build -t xxxxxxx.dkr.ecr.ap-southeast-1.amazonaws.com/web:latest ./web/source/
+              eval $(aws ecr get-login --region ap-southeast-1)
+              docker push xxxxxxx.dkr.ecr.ap-southeast-1.amazonaws.com/web:latest
+              ecs-cli compose -f docker/docker-compose-staging.yml service up --deployment-min-healthy-percent 0 --timeout 5
+            fi 
+            
+            
+            
+      - store_artifacts:
+           path: /code/test-results
+    
+      - store_test_results:
+           path: /tmp/test-results
+    
+    
+      
